@@ -7,6 +7,26 @@ document.addEventListener("DOMContentLoaded", () => {
   const editTodoInput = document.getElementById("edit-todo-input");
   const saveEditBtn = document.getElementById("save-edit-btn");
   const cancelEditBtn = document.getElementById("cancel-edit-btn");
+  const clockElement = document.getElementById("clock");
+
+  // Clock functionality
+  function updateClock() {
+    const now = new Date();
+    const options = {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    };
+    clockElement.textContent = now.toLocaleDateString("en-US", options);
+  }
+
+  // Initialize and update clock every second
+  updateClock();
+  setInterval(updateClock, 1000);
 
   // State
   let todos = [];
