@@ -483,6 +483,7 @@ h1 sl-icon {
   align-items: center;
   justify-content: space-between;
   padding: 18px 22px;
+  padding-left: 30px;
   background-color: rgba(37, 38, 68, 0.5);
   border-radius: var(--border-radius-md);
   border-left: 4px solid var(--primary-color);
@@ -1002,4 +1003,82 @@ h1 sl-icon {
   color: var(--text-secondary);
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
+}
+
+/* Drag and drop styles */
+.todo-item.draggable {
+  cursor: grab;
+  position: relative;
+}
+
+.todo-item.dragging {
+  opacity: 0.6;
+  cursor: grabbing;
+  z-index: 999;
+  box-shadow: var(--shadow-lg), 0 0 20px rgba(138, 99, 210, 0.5);
+  border-left-color: var(--primary-hover);
+  transform: scale(1.02);
+  background-color: rgba(46, 47, 86, 0.85);
+}
+
+.drag-handle {
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(37, 38, 68, 0.7);
+  border-radius: 4px 0 0 4px;
+  width: 24px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  color: var(--text-tertiary);
+  z-index: 2;
+  cursor: grab;
+  border-left: 2px solid var(--primary-color);
+  box-shadow: -3px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.todo-item.draggable:hover .drag-handle {
+  opacity: 1;
+  transform: translateY(-50%) translateX(-5px);
+}
+
+.todo-item.dragging .drag-handle {
+  opacity: 1;
+  color: var(--primary-color);
+}
+
+.drag-handle sl-icon {
+  font-size: 1.1rem;
+}
+
+/* Hover state for draggable items */
+.todo-item.draggable:not(.dragging):hover::after {
+  content: "";
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 4px solid transparent;
+  border-left: 4px solid rgba(138, 99, 210, 0.4);
+  height: 20px;
+  border-radius: 0 4px 4px 0;
+  pointer-events: none;
+  animation: pulseHandle 1.5s infinite ease;
+}
+
+@keyframes pulseHandle {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: translateY(-50%) translateX(0);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translateY(-50%) translateX(3px);
+  }
 }

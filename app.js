@@ -5,6 +5,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const todoList = document.getElementById("todo-list");
   const clockElement = document.getElementById("clock");
 
+  // Variables for drag and drop
+  let draggedItem = null;
+  let draggedItemId = null;
+
   // Clock functionality with improved formatting
   function updateClock() {
     const now = new Date();
@@ -691,6 +695,35 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 10);
   };
 
+  // Update todo order after drag and drop
+  const updateTodoOrder = () => {
+    // Get all non-completed todos
+    const incompleteTodos = todos.filter((todo) => !todo.completed);
+    const completedTodos = todos.filter((todo) => todo.completed);
+
+    // Get the current order from the DOM
+    const todoElements = document.querySelectorAll(
+      ".todo-item:not(.completed)"
+    );
+    const newOrderedTodos = [];
+
+    // Create a new array with the updated order
+    todoElements.forEach((el) => {
+      const id = el.dataset.id;
+      const todo = incompleteTodos.find((t) => t.id === id);
+      if (todo) {
+        newOrderedTodos.push(todo);
+      }
+    });
+
+    // Combine with completed todos (which stay at the end)
+    todos = [...newOrderedTodos, ...completedTodos];
+    saveTodos();
+
+    // Show notification
+    showNotification("success", "Task order updated", "arrow-repeat", 2000);
+  };
+
   // Render todos
   const renderTodos = () => {
     todoList.innerHTML = "";
@@ -723,6 +756,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Add staggered animation delay for smoother list appearance
       todoItem.style.animation = `fadeIn 0.4s ${index * 0.05}s backwards`;
+
+      // Make non-completed items draggable
+      if (!todo.completed) {
+        todoItem.draggable = true;
+        todoItem.classList.add("draggable");
+
+        // Add drag handle
+        const dragHandle = document.createElement("div");
+        dragHandle.className = "drag-handle";
+        dragHandle.innerHTML = `<sl-icon name="grip-vertical"></sl-icon>`;
+        todoItem.appendChild(dragHandle);
+
+        // Drag and drop event listeners
+        todoItem.addEventListener("dragstart", (e) => {
+          draggedItem = todoItem;
+          draggedItemId = todo.id;
+          setTimeout(() => {
+            todoItem.classList.add("dragging");
+          }, 0);
+        });
+
+        todoItem.addEventListener("dragend", () => {
+          todoItem.classList.remove("dragging");
+          draggedItem = null;
+          draggedItemId = null;
+          // Update the order in our data
+          updateTodoOrder();
+        });
+      }
 
       // Main content - checkbox, text and time
       const todoContent = document.createElement("div");
@@ -819,6 +881,55 @@ document.addEventListener("DOMContentLoaded", () => {
       todoList.appendChild(todoItem);
     });
   };
+
+  // Set up drag and drop event listeners once
+  todoList.addEventListener("dragover", (e) => {
+    e.preventDefault();
+
+    // Only process for non-completed items
+    if (!draggedItem || draggedItem.classList.contains("completed")) return;
+
+    const afterElement = getDragAfterElement(todoList, e.clientY);
+    const draggable = document.querySelector(".dragging");
+
+    if (afterElement && !afterElement.classList.contains("completed")) {
+      todoList.insertBefore(draggable, afterElement);
+    } else {
+      // Find the first completed item (if any) to insert before
+      const firstCompletedItem = todoList.querySelector(".todo-item.completed");
+      if (firstCompletedItem) {
+        todoList.insertBefore(draggable, firstCompletedItem);
+      } else {
+        todoList.appendChild(draggable);
+      }
+    }
+  });
+
+  // Helper function to determine where to drop the dragged element
+  function getDragAfterElement(container, y) {
+    // Get all draggable elements that are not currently being dragged and not completed
+    const draggableElements = [
+      ...container.querySelectorAll(
+        ".draggable:not(.dragging):not(.completed)"
+      ),
+    ];
+
+    return draggableElements.reduce(
+      (closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+
+        // If offset is negative, we're above this element
+        // We want the closest element that's above where we're dragging
+        if (offset < 0 && offset > closest.offset) {
+          return { offset: offset, element: child };
+        } else {
+          return closest;
+        }
+      },
+      { offset: Number.NEGATIVE_INFINITY }
+    ).element;
+  }
 
   // Event Listeners - simplified since dialog handling is now done in the edit functions
   addTodoBtn.addEventListener("click", addTodo);
