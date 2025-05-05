@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Todo List App</title>
+    <!-- Shoelace UI Component Library -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.5.2/cdn/themes/light.css"
+    />
+    <script
+      type="module"
+      src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.5.2/cdn/shoelace-autoloader.js"
+    ></script>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Todo List</h1>
+
+      <div class="todo-form">
+        <sl-input id="todo-input" placeholder="Add a new task"></sl-input>
+        <sl-button id="add-todo-btn" variant="primary">Add</sl-button>
+      </div>
+
+      <div class="todo-list" id="todo-list">
+        <!-- Todo items will be added here dynamically -->
+      </div>
+
+      <!-- Edit Todo Dialog -->
+      <sl-dialog id="edit-dialog" label="Edit Todo">
+        <sl-input id="edit-todo-input"></sl-input>
+        <sl-button slot="footer" id="save-edit-btn" variant="primary"
+          >Save</sl-button
+        >
+        <sl-button slot="footer" id="cancel-edit-btn" variant="default"
+          >Cancel</sl-button
+        >
+      </sl-dialog>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
