@@ -222,18 +222,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     saveTodos();
 
-    // Apply animation before re-rendering
-    const todoEl = document.querySelector(`.todo-item[data-id="${id}"]`);
-    todoEl.style.animation = "pulse 0.4s";
-
-    // Instead of re-rendering the entire list, update just this item
-    todoEl.className = `todo-item ${isComplete ? "completed" : ""}`;
-
-    // Update the checkbox directly
-    const checkbox = todoEl.querySelector(".todo-checkbox");
-    if (checkbox) {
-      checkbox.className = `todo-checkbox ${isComplete ? "checked" : ""}`;
-    }
+    // Instead of updating just this item, re-render the whole list
+    // This ensures the event listeners are properly updated
+    renderTodos();
 
     // Show status change notification
     showNotification(
@@ -242,6 +233,14 @@ document.addEventListener("DOMContentLoaded", () => {
       isComplete ? "check-circle" : "arrow-counterclockwise",
       2000
     );
+
+    // Apply highlight effect to the toggled item after re-rendering
+    setTimeout(() => {
+      const todoEl = document.querySelector(`.todo-item[data-id="${id}"]`);
+      if (todoEl) {
+        todoEl.style.animation = "pulse 0.4s";
+      }
+    }, 0);
   };
 
   // Add new todo with animation
@@ -774,18 +773,45 @@ document.addEventListener("DOMContentLoaded", () => {
       editButton.setAttribute("size", "small");
       editButton.setAttribute("variant", "default");
       editButton.innerHTML = '<sl-icon name="pencil"></sl-icon>';
-      editButton.addEventListener("click", () => editTodo(todo.id));
       editButton.title = "Edit Task";
+
+      // Only add event listener if task is not completed
+      if (!todo.completed) {
+        editButton.addEventListener("click", () => editTodo(todo.id));
+        todoActions.appendChild(editButton);
+      } else {
+        editButton.setAttribute("disabled", "");
+        editButton.title = "Cannot edit completed task";
+        editButton.classList.add("disabled-button");
+        // Wrap in a div with cursor not-allowed
+        const editWrapper = document.createElement("div");
+        editWrapper.style.cursor = "not-allowed";
+        editWrapper.style.display = "inline-block";
+        editWrapper.appendChild(editButton);
+        todoActions.appendChild(editWrapper);
+      }
 
       const deleteButton = document.createElement("sl-button");
       deleteButton.setAttribute("size", "small");
       deleteButton.setAttribute("variant", "danger");
       deleteButton.innerHTML = '<sl-icon name="trash"></sl-icon>';
-      deleteButton.addEventListener("click", () => deleteTodo(todo.id));
       deleteButton.title = "Delete Task";
 
-      todoActions.appendChild(editButton);
-      todoActions.appendChild(deleteButton);
+      // Only add event listener if task is not completed
+      if (!todo.completed) {
+        deleteButton.addEventListener("click", () => deleteTodo(todo.id));
+        todoActions.appendChild(deleteButton);
+      } else {
+        deleteButton.setAttribute("disabled", "");
+        deleteButton.title = "Cannot delete completed task";
+        deleteButton.classList.add("disabled-button");
+        // Wrap in a div with cursor not-allowed
+        const deleteWrapper = document.createElement("div");
+        deleteWrapper.style.cursor = "not-allowed";
+        deleteWrapper.style.display = "inline-block";
+        deleteWrapper.appendChild(deleteButton);
+        todoActions.appendChild(deleteWrapper);
+      }
 
       todoItem.appendChild(todoContent);
       todoItem.appendChild(todoActions);

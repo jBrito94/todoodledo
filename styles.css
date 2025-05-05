@@ -663,6 +663,27 @@ h1 sl-icon {
   border-color: rgba(255, 77, 109, 0.5);
 }
 
+/* Disabled button styles - simplified now that we use wrappers */
+.todo-actions sl-button[disabled]::part(base),
+.todo-actions .disabled-button::part(base) {
+  opacity: 0.35 !important;
+  transform: none !important;
+  box-shadow: none !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: var(--text-tertiary) !important;
+}
+
+.todo-actions sl-button[disabled][variant="danger"]::part(base) {
+  color: rgba(255, 77, 109, 0.4) !important;
+  border-color: rgba(255, 77, 109, 0.15) !important;
+}
+
+.todo-actions sl-button[disabled][variant="default"]::part(base) {
+  color: rgba(10, 239, 255, 0.4) !important;
+  border-color: rgba(10, 239, 255, 0.15) !important;
+}
+
 /* Enhanced empty state */
 .empty-message {
   display: flex;
