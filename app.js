@@ -20,6 +20,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Weather API
   function getWeather() {
+    // Check if we have cached weather data first
+    const cachedWeather = localStorage.getItem("weather_cache");
+    const cacheTime = localStorage.getItem("weather_cache_time");
+
+    // Use cached data if it's less than 60 minutes old and not explicitly refreshing
+    if (
+      cachedWeather &&
+      cacheTime &&
+      Date.now() - parseInt(cacheTime) < 60 * 60 * 1000
+    ) {
+      try {
+        const weatherData = JSON.parse(cachedWeather);
+        displayWeatherData(weatherData);
+        return;
+      } catch (e) {
+        console.error("Error parsing cached weather:", e);
+        // Continue with fresh fetch if cache parsing fails
+      }
+    }
+
+    // Show loading state
+    weatherDisplay.innerHTML = `<div class="weather-loading"><sl-icon name="arrow-repeat"></sl-icon> Loading weather...</div>`;
+    const loadingIcon = weatherDisplay.querySelector("sl-icon");
+    if (loadingIcon) {
+      loadingIcon.style.animation = "spin 2s linear infinite";
+    }
+
     // First get user's location
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -30,74 +57,379 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         (error) => {
           console.error("Error getting location:", error);
-          weatherDisplay.innerHTML = `
-            <div class="weather-error">
-              <sl-icon name="geo-alt"></sl-icon>
-              <span>Enable location for weather</span>
-            </div>
-          `;
-          weatherDisplay.style.opacity = "0.7";
+
+          // Different message based on error code
+          if (error.code === 1) {
+            // PERMISSION_DENIED
+            weatherDisplay.innerHTML = `
+              <div class="weather-error">
+                <sl-icon name="geo-alt-fill"></sl-icon>
+                <span>Location access denied</span>
+                <div style="margin-top: 5px; display: flex; gap: 8px;">
+                  <button id="retry-weather" style="
+                    background: transparent;
+                    border: 1px solid var(--accent-blue);
+                    color: var(--accent-blue);
+                    cursor: pointer;
+                    border-radius: 4px;
+                    padding: 3px 6px;
+                    font-size: 0.75rem;
+                  ">Try Again</button>
+                  <button id="use-ip-location" style="
+                    background: var(--accent-blue);
+                    border: none;
+                    color: white;
+                    cursor: pointer;
+                    border-radius: 4px;
+                    padding: 3px 6px;
+                    font-size: 0.75rem;
+                  ">Use IP Location</button>
+                </div>
+              </div>
+            `;
+
+            // Add retry button functionality
+            const retryBtn = document.getElementById("retry-weather");
+            if (retryBtn) {
+              retryBtn.addEventListener("click", () => {
+                getWeather();
+              });
+            }
+
+            // Add IP location fallback button
+            const useIpBtn = document.getElementById("use-ip-location");
+            if (useIpBtn) {
+              useIpBtn.addEventListener("click", () => {
+                fallbackWeatherFetch();
+              });
+            }
+          } else if (error.code === 2) {
+            // POSITION_UNAVAILABLE
+            weatherDisplay.innerHTML = `
+              <div class="weather-error">
+                <sl-icon name="geo-alt"></sl-icon>
+                <span>Location unavailable</span>
+                <button id="use-ip-location" style="
+                  background: transparent;
+                  border: none;
+                  color: var(--accent-blue);
+                  cursor: pointer;
+                  margin-left: 8px;
+                  font-size: 0.8rem;
+                ">Use IP Location</button>
+              </div>
+            `;
+
+            // Add IP location fallback button
+            const useIpBtn = document.getElementById("use-ip-location");
+            if (useIpBtn) {
+              useIpBtn.addEventListener("click", () => {
+                fallbackWeatherFetch();
+              });
+            }
+          } else {
+            // For timeout or other errors, try fallback automatically
+            fallbackWeatherFetch();
+          }
+        },
+        {
+          enableHighAccuracy: false, // Don't need high accuracy for weather
+          timeout: 10000, // 10 second timeout
+          maximumAge: 600000, // Accept a position up to 10 minutes old
         }
       );
     } else {
-      weatherDisplay.innerHTML = "Weather not available";
-      weatherDisplay.style.opacity = "0.7";
+      // Browser doesn't support geolocation
+      weatherDisplay.innerHTML = `
+        <div class="weather-error">
+          <sl-icon name="geo-alt"></sl-icon>
+          <span>Geolocation not supported</span>
+          <button id="use-ip-location" style="
+            background: transparent;
+            border: none;
+            color: var(--accent-blue);
+            cursor: pointer;
+            margin-left: 8px;
+            font-size: 0.8rem;
+          ">Use IP Location</button>
+        </div>
+      `;
+
+      // Add IP location fallback button
+      const useIpBtn = document.getElementById("use-ip-location");
+      if (useIpBtn) {
+        useIpBtn.addEventListener("click", () => {
+          fallbackWeatherFetch();
+        });
+      }
     }
   }
 
-  // Fetch weather data using OpenWeatherMap API (free tier)
+  // Fetch weather data using a service that doesn't require API key
   function fetchWeatherData(lat, lon) {
-    const apiKey = "d5c5ac687b54b1f324c6431c3a917c68"; // This is a free API key
-    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
+    // Check if we have cached weather data first
+    const cachedWeather = localStorage.getItem("weather_cache");
+    const cacheTime = localStorage.getItem("weather_cache_time");
+
+    // Use cached data if it's less than 60 minutes old
+    if (
+      cachedWeather &&
+      cacheTime &&
+      Date.now() - parseInt(cacheTime) < 60 * 60 * 1000
+    ) {
+      try {
+        const weatherData = JSON.parse(cachedWeather);
+        displayWeatherData(weatherData);
+        return;
+      } catch (e) {
+        console.error("Error parsing cached weather:", e);
+        // Continue with fresh fetch if cache parsing fails
+      }
+    }
+
+    // Using wttr.in service which doesn't require an API key
+    const url = `https://wttr.in/${lat},${lon}?format=j1`;
 
     weatherDisplay.innerHTML = `<div class="weather-loading"><sl-icon name="arrow-repeat"></sl-icon> Loading weather...</div>`;
+
+    // Add animation to the loading icon
+    const loadingIcon = weatherDisplay.querySelector("sl-icon");
+    if (loadingIcon) {
+      loadingIcon.style.animation = "spin 2s linear infinite";
+    }
 
     fetch(url)
       .then((response) => {
         if (!response.ok) {
-          throw new Error("Weather data not available");
+          throw new Error(
+            `Weather API responded with status: ${response.status}`
+          );
         }
         return response.json();
       })
       .then((data) => {
-        // Format and display weather data
-        const temp = Math.round(data.main.temp);
-        const feelsLike = Math.round(data.main.feels_like);
-        const description = data.weather[0].description;
-        const icon = getWeatherIcon(data.weather[0].icon);
-        const city = data.name;
+        // Cache the successful weather data
+        localStorage.setItem("weather_cache", JSON.stringify(data));
+        localStorage.setItem("weather_cache_time", Date.now().toString());
 
-        weatherDisplay.innerHTML = `
-          <div class="weather-icon">
-            <sl-icon name="${icon}"></sl-icon>
-          </div>
-          <div class="weather-info">
-            <div class="weather-temp">${temp}°C</div>
-            <div class="weather-description">${description}</div>
-            <div class="weather-location">${city}</div>
-          </div>
-        `;
-
-        // Add weather to document body as a CSS variable for potential theme adaptation
-        const isWarm = temp > 20;
-        const isCold = temp < 10;
-        document.body.style.setProperty("--weather-temp", temp);
-        if (isWarm) document.body.classList.add("warm-weather");
-        if (isCold) document.body.classList.add("cold-weather");
+        // Display the weather data using the helper function
+        displayWeatherData(data);
       })
       .catch((error) => {
         console.error("Error fetching weather:", error);
+
+        // Try fallback location approach
+        fallbackWeatherFetch();
+      });
+  }
+
+  // Fallback weather fetch using IP geolocation
+  function fallbackWeatherFetch() {
+    // Check if we have cached weather data first
+    const cachedWeather = localStorage.getItem("weather_cache");
+    const cacheTime = localStorage.getItem("weather_cache_time");
+
+    // Use cached data if it's less than 60 minutes old
+    if (
+      cachedWeather &&
+      cacheTime &&
+      Date.now() - parseInt(cacheTime) < 60 * 60 * 1000
+    ) {
+      try {
+        const weatherData = JSON.parse(cachedWeather);
+        displayWeatherData(weatherData);
+        return;
+      } catch (e) {
+        console.error("Error parsing cached weather:", e);
+        // Continue with fresh fetch if cache parsing fails
+      }
+    }
+
+    // Try to get a city name from IP using no-API service
+    fetch("https://ip-api.com/json/")
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`IP API responded with status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if (data && data.city) {
+          // Use city name with wttr.in
+          return fetch(`https://wttr.in/${data.city}?format=j1`);
+        } else {
+          throw new Error("Could not determine location");
+        }
+      })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(
+            `Weather API responded with status: ${response.status}`
+          );
+        }
+        return response.json();
+      })
+      .then((data) => {
+        // Cache the weather data
+        localStorage.setItem("weather_cache", JSON.stringify(data));
+        localStorage.setItem("weather_cache_time", Date.now().toString());
+
+        // Display the weather data
+        displayWeatherData(data);
+      })
+      .catch((error) => {
+        console.error("Fallback weather fetch failed:", error);
         weatherDisplay.innerHTML = `
           <div class="weather-error">
             <sl-icon name="cloud-slash"></sl-icon>
             <span>Weather unavailable</span>
+            <button id="retry-weather" style="
+              background: transparent;
+              border: none;
+              color: var(--accent-blue);
+              cursor: pointer;
+              margin-left: 8px;
+              font-size: 0.8rem;
+            ">Retry</button>
           </div>
         `;
-        weatherDisplay.style.opacity = "0.7";
+
+        // Add retry button functionality
+        const retryBtn = document.getElementById("retry-weather");
+        if (retryBtn) {
+          retryBtn.addEventListener("click", () => {
+            // Clear cache on retry
+            localStorage.removeItem("weather_cache");
+            localStorage.removeItem("weather_cache_time");
+            getWeather();
+          });
+        }
       });
   }
 
-  // Map OpenWeatherMap icons to Shoelace icons
+  // Helper function to display weather data
+  function displayWeatherData(data) {
+    try {
+      // wttr.in has a different data structure
+      const currentCondition = data.current_condition[0];
+      const temp = currentCondition.temp_C;
+      const description = currentCondition.weatherDesc[0].value;
+      const icon = getWeatherIconFromWttr(currentCondition.weatherCode);
+      // Get the nearest area name
+      const city = data.nearest_area[0].areaName[0].value;
+
+      weatherDisplay.innerHTML = `
+        <div class="weather-icon">
+          <sl-icon name="${icon}"></sl-icon>
+        </div>
+        <div class="weather-temp">
+          <sl-icon name="thermometer-half" style="font-size: 0.9rem;"></sl-icon>
+          ${temp}°C
+        </div>
+        <div class="weather-description">
+          <sl-icon name="cloud" style="font-size: 0.9rem;"></sl-icon>
+          ${description}
+        </div>
+        <div class="weather-location">
+          <sl-icon name="geo-alt" style="font-size: 0.9rem;"></sl-icon>
+          ${city}
+        </div>
+      `;
+
+      // Add weather to document body as a CSS variable for potential theme adaptation
+      const isWarm = parseInt(temp) > 20;
+      const isCold = parseInt(temp) < 10;
+      document.body.style.setProperty("--weather-temp", temp);
+      if (isWarm) document.body.classList.add("warm-weather");
+      if (isCold) document.body.classList.add("cold-weather");
+    } catch (error) {
+      console.error("Error parsing weather data:", error);
+      weatherDisplay.innerHTML = `
+        <div class="weather-error">
+          <sl-icon name="exclamation-triangle"></sl-icon>
+          <span>Invalid weather data</span>
+          <button id="retry-weather" style="
+            background: transparent;
+            border: none;
+            color: var(--accent-blue);
+            cursor: pointer;
+            margin-left: 8px;
+            font-size: 0.8rem;
+          ">Retry</button>
+        </div>
+      `;
+
+      // Add retry button functionality
+      const retryBtn = document.getElementById("retry-weather");
+      if (retryBtn) {
+        retryBtn.addEventListener("click", () => {
+          // Clear cache on retry
+          localStorage.removeItem("weather_cache");
+          localStorage.removeItem("weather_cache_time");
+          getWeather();
+        });
+      }
+    }
+  }
+
+  // Map wttr.in weather codes to Shoelace icons
+  function getWeatherIconFromWttr(code) {
+    // Weather codes based on wttr.in documentation
+    const codeMap = {
+      // Clear/Sunny
+      113: "sun",
+      // Partly cloudy
+      116: "cloud-sun",
+      // Cloudy
+      119: "cloud",
+      122: "clouds",
+      // Fog/Mist
+      143: "cloud-haze",
+      248: "cloud-haze",
+      260: "cloud-fog",
+      // Rainy
+      176: "cloud-drizzle",
+      263: "cloud-drizzle",
+      266: "cloud-drizzle",
+      281: "cloud-rain",
+      284: "cloud-rain",
+      293: "cloud-rain",
+      296: "cloud-rain",
+      299: "cloud-rain",
+      302: "cloud-rain",
+      305: "cloud-rain",
+      308: "cloud-rain",
+      311: "cloud-rain",
+      314: "cloud-rain",
+      // Snowy
+      179: "snow",
+      227: "snow",
+      230: "snow",
+      323: "snow",
+      326: "snow",
+      329: "snow",
+      332: "snow",
+      335: "snow",
+      338: "snow",
+      350: "snow",
+      362: "snow",
+      365: "snow",
+      368: "snow",
+      371: "snow",
+      374: "snow",
+      377: "snow",
+      // Thunderstorm
+      200: "cloud-lightning",
+      386: "cloud-lightning",
+      389: "cloud-lightning",
+      392: "cloud-lightning",
+      395: "cloud-lightning",
+    };
+
+    return codeMap[code] || "cloud"; // Default to cloud if code not found
+  }
+
+  // Map OpenWeatherMap icons to Shoelace icons (keeping for reference)
   function getWeatherIcon(iconCode) {
     const iconMap = {
       "01d": "sun",
@@ -137,6 +469,7 @@ document.addEventListener("DOMContentLoaded", () => {
       hour: "2-digit",
       minute: "2-digit",
       second: "2-digit",
+      hour12: false, // Use 24-hour format
     };
 
     const dateStr = now.toLocaleDateString("en-US", dateOptions);
@@ -1717,60 +2050,6 @@ document.addEventListener("DOMContentLoaded", () => {
         font-size: 0.8rem;
         padding: 5px 10px;
       }
-    }
-    
-    .weather-display {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-top: 15px;
-      padding: 10px 15px;
-      background-color: rgba(37, 38, 68, 0.7);
-      border-radius: var(--border-radius-md);
-      animation: fadeIn 0.6s 0.3s backwards;
-    }
-    
-    .weather-icon {
-      font-size: 1.8rem;
-      color: var(--accent-blue);
-    }
-    
-    .weather-info {
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .weather-temp {
-      font-weight: 600;
-      font-size: 1.1rem;
-    }
-    
-    .weather-description {
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-      text-transform: capitalize;
-    }
-    
-    .weather-location {
-      font-size: 0.8rem;
-      color: var(--text-tertiary);
-    }
-    
-    .weather-error, .weather-loading {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-    }
-    
-    .weather-loading sl-icon {
-      animation: spin 2s linear infinite;
-    }
-    
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
     }
   `;
   document.head.appendChild(categoryFilterStyles);
