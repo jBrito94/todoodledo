@@ -745,13 +745,14 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Sort todos by completed status and creation date
+    // Use the order directly from the todos array - don't sort by date
+    // We only need to separate completed and non-completed items
     const sortedTodos = [...todos].sort((a, b) => {
       if (a.completed !== b.completed) {
         return a.completed ? 1 : -1; // Uncompleted first
       }
-      // Sort by date (newer first) if completion status is the same
-      return new Date(b.createdAt) - new Date(a.createdAt);
+      // Maintain the existing order within each group (completed/incomplete)
+      return 0;
     });
 
     sortedTodos.forEach((todo, index) => {
