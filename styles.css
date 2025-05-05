@@ -2,89 +2,724 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+}
+
+:root {
+  /* Updated color palette */
+  --primary-color: #8a63d2;
+  --primary-hover: #9c7be0;
+  --primary-active: #7356b8;
+  --secondary-color: #a88aea;
+  --text-color: #e6e8ff;
+  --text-secondary: rgba(230, 232, 255, 0.75);
+  --text-tertiary: rgba(230, 232, 255, 0.5);
+  --bg-dark: #0f0f1a;
+  --bg-surface: #1a1a2e;
+  --bg-component: #24243c;
+  --bg-hover: #2e2e4a;
+  --bg-active: #38386b;
+  --accent-green: #4ecca3;
+  --accent-red: #e94560;
+  --accent-yellow: #ffbd39;
+  --accent-blue: #3498db;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.15);
+  --shadow-md: 0 6px 24px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.3);
+  --shadow-glow: 0 0 15px rgba(138, 99, 210, 0.4);
+  --gradient-primary: linear-gradient(135deg, #8a63d2, #a88aea);
+  --gradient-accent: linear-gradient(135deg, #4ecca3, #3db9d5);
+  --border-radius-sm: 6px;
+  --border-radius-md: 12px;
+  --border-radius-lg: 16px;
+  --border-light: 1px solid rgba(255, 255, 255, 0.05);
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease;
 }
 
 body {
-  font-family: var(--sl-font-sans);
-  background-color: #f5f5f5;
-  color: #333;
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  background: radial-gradient(
+    circle at center,
+    var(--bg-surface) 0%,
+    var(--bg-dark) 100%
+  );
+  color: var(--text-color);
   line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s, color 0.3s;
+  padding: 20px 10px;
+}
+
+.app-wrapper {
+  width: 100%;
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
 }
 
 .container {
-  max-width: 600px;
-  margin: 40px auto;
-  padding: 20px;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  background-color: var(--bg-surface);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-lg);
+  border: var(--border-light);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Apply a subtle gradient border effect */
+.container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--border-radius-lg);
+  padding: 1px;
+  background: linear-gradient(
+    to bottom right,
+    rgba(138, 99, 210, 0.3),
+    transparent
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* App Header */
+.app-header {
+  padding: 25px 30px 20px;
+  position: relative;
+  background-color: rgba(20, 20, 35, 0.6);
+  border-bottom: var(--border-light);
 }
 
 h1 {
   text-align: center;
-  margin-bottom: 20px;
-  color: #2c3e50;
+  font-weight: 700;
+  font-size: 2.4rem;
+  letter-spacing: -0.5px;
+  margin-bottom: 16px;
+  background: var(--gradient-primary);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 
+h1 sl-icon {
+  font-size: 2rem;
+  color: var(--primary-color);
+}
+
+/* Clock */
 .clock {
   text-align: center;
-  margin-bottom: 20px;
-  padding: 10px;
-  font-size: 1.2rem;
+  padding: 12px;
+  font-size: 1rem;
   font-weight: 500;
-  color: #3498db;
-  background-color: #f0f8ff;
-  border-radius: 4px;
+  background-color: var(--bg-component);
+  border-radius: var(--border-radius-md);
+  letter-spacing: 0.5px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+  border: var(--border-light);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.clock .date {
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.clock .time {
+  font-weight: 500;
+  color: var(--text-secondary);
   letter-spacing: 1px;
 }
 
+/* Todo Form */
 .todo-form {
   display: flex;
-  margin-bottom: 20px;
-  gap: 10px;
+  padding: 30px 30px 20px;
+  gap: 15px;
+  position: relative;
+  z-index: 5;
 }
 
 .todo-form sl-input {
   flex-grow: 1;
+  --sl-input-border-radius: var(--border-radius-md);
+  --sl-input-height-medium: 50px;
+  --sl-input-font-size-medium: 1rem;
+}
+
+.todo-form sl-input::part(base) {
+  background-color: var(--bg-component);
+  border-color: rgba(255, 255, 255, 0.08);
+  transition: all var(--transition-fast);
+}
+
+.todo-form sl-input::part(input) {
+  padding-left: 16px;
+  color: var(--text-color);
+  font-weight: 500;
+}
+
+.todo-form sl-input::part(base):hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: var(--shadow-sm);
+}
+
+.todo-form sl-input::part(base):focus-within {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(138, 99, 210, 0.25);
+}
+
+/* Button styles */
+sl-button::part(base) {
+  border-radius: var(--border-radius-md);
+  transition: all var(--transition-fast);
+  font-weight: 600;
+}
+
+.todo-form sl-button::part(base) {
+  height: 50px;
+  padding: 0 20px;
+  font-size: 1rem;
+  background: var(--gradient-primary);
+  border: none;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.todo-form sl-button::part(base):hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md), var(--shadow-glow);
+}
+
+.todo-form sl-button::part(base):active {
+  transform: translateY(0);
+  background: var(--primary-active);
+  box-shadow: var(--shadow-sm);
+}
+
+.todo-form sl-button sl-icon {
+  font-size: 1.2rem;
+}
+
+/* Todo List Container */
+.todo-list-container {
+  padding: 10px 30px 30px;
+  flex-grow: 1;
+  max-height: 60vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-color) var(--bg-component);
+}
+
+.todo-list-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.todo-list-container::-webkit-scrollbar-track {
+  background: var(--bg-component);
+  border-radius: 20px;
+}
+
+.todo-list-container::-webkit-scrollbar-thumb {
+  background-color: var(--primary-active);
+  border-radius: 20px;
 }
 
 .todo-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 15px;
 }
 
+/* Todo Items */
 .todo-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 15px;
-  background-color: #f9f9f9;
-  border-radius: 4px;
-  border-left: 4px solid #3498db;
+  padding: 16px 20px;
+  background-color: var(--bg-component);
+  border-radius: var(--border-radius-md);
+  border-left: 4px solid var(--primary-color);
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+  font-weight: 500;
+}
+
+.todo-item::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    var(--primary-color) -100%,
+    transparent 10%
+  );
+  opacity: 0.1;
+  transition: opacity var(--transition-normal);
+}
+
+.todo-item:hover {
+  background-color: var(--bg-hover);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: var(--shadow-md);
+}
+
+.todo-item:hover::before {
+  opacity: 0.2;
 }
 
 .todo-item.completed {
-  opacity: 0.7;
-  border-left-color: #2ecc71;
+  opacity: 0.75;
+  border-left-color: var(--accent-green);
+}
+
+.todo-item.completed::before {
+  background: linear-gradient(
+    90deg,
+    var(--accent-green) -100%,
+    transparent 10%
+  );
 }
 
 .todo-item.completed .todo-text {
   text-decoration: line-through;
+  color: var(--text-tertiary);
 }
 
 .todo-content {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 15px;
   flex-grow: 1;
+}
+
+.todo-content sl-checkbox {
+  --sl-input-border-color: rgba(255, 255, 255, 0.2);
+}
+
+.todo-content sl-checkbox::part(base) {
+  --sl-color-primary-600: var(--primary-color);
+}
+
+.todo-content sl-checkbox::part(control) {
+  border-radius: 4px;
+}
+
+.todo-content sl-checkbox::part(checked-icon) {
+  color: white;
+}
+
+.todo-text-container {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
 .todo-text {
   word-break: break-word;
+  font-size: 1.05rem;
+  color: var(--text-color);
+  transition: color var(--transition-normal);
+}
+
+.todo-time {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.todo-time sl-icon {
+  font-size: 0.9rem;
 }
 
 .todo-actions {
   display: flex;
-  gap: 5px;
+  gap: 10px;
+}
+
+.todo-actions sl-button::part(base) {
+  border-radius: var(--border-radius-sm);
+  box-shadow: none;
+  transition: all var(--transition-fast);
+  padding: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.todo-actions sl-button::part(base):hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.todo-actions sl-button[variant="danger"]::part(base) {
+  background-color: transparent;
+  border: 1px solid var(--accent-red);
+  color: var(--accent-red);
+}
+
+.todo-actions sl-button[variant="danger"]::part(base):hover {
+  background-color: var(--accent-red);
+  color: white;
+}
+
+.todo-actions sl-button[variant="default"]::part(base) {
+  background-color: transparent;
+  border: 1px solid var(--text-tertiary);
+  color: var(--text-color);
+}
+
+.todo-actions sl-button[variant="default"]::part(base):hover {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+.todo-actions sl-button sl-icon {
+  font-size: 1rem;
+}
+
+/* Empty State */
+.empty-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 0;
+  text-align: center;
+  color: var(--text-secondary);
+  background-color: rgba(36, 36, 60, 0.5);
+  border-radius: var(--border-radius-md);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  transition: all var(--transition-normal);
+}
+
+.empty-message:hover {
+  color: var(--text-color);
+  border-color: rgba(255, 255, 255, 0.2);
+  background-color: var(--bg-component);
+  transform: scale(1.01);
+}
+
+.empty-message sl-icon {
+  color: var(--primary-color);
+  margin-bottom: 15px;
+  font-size: 3rem;
+  animation: pulse 2s infinite;
+}
+
+.empty-message p:first-of-type {
+  font-weight: 600;
+  font-size: 1.2rem;
+  margin-bottom: 6px;
+}
+
+/* Dialog styling */
+sl-dialog::part(panel) {
+  background-color: var(--bg-surface);
+  color: var(--text-color);
+  border-radius: var(--border-radius-lg);
+  border: var(--border-light);
+  box-shadow: var(--shadow-lg);
+  max-width: 450px;
+  width: 90%;
+  z-index: 9999;
+  position: relative;
+}
+
+sl-dialog::part(header) {
+  color: var(--text-color);
+  font-weight: 600;
+  padding: 24px 24px 5px;
+  font-size: 1.2rem;
+}
+
+sl-dialog::part(body) {
+  padding: 20px 24px;
+}
+
+sl-dialog::part(footer) {
+  padding: 5px 24px 24px;
+}
+
+sl-dialog sl-input::part(base) {
+  background-color: var(--bg-component);
+  border-color: rgba(255, 255, 255, 0.1);
+  --sl-input-border-radius: var(--border-radius-md);
+  --sl-input-height-medium: 48px;
+}
+
+sl-dialog sl-input::part(input) {
+  color: var(--text-color);
+  font-weight: 500;
+  padding-left: 16px;
+}
+
+/* Dialog buttons */
+sl-dialog sl-button[variant="primary"]::part(base) {
+  background: var(--gradient-primary);
+  border: none;
+  font-weight: 600;
+  padding: 0 20px;
+  height: 44px;
+}
+
+sl-dialog sl-button[variant="default"]::part(base) {
+  background-color: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-color);
+  padding: 0 20px;
+  height: 44px;
+}
+
+sl-dialog sl-button::part(base):hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Toast styling */
+sl-toast::part(base) {
+  background-color: var(--bg-surface);
+  border: var(--border-light);
+  color: var(--text-color);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-lg);
+  position: fixed;
+  z-index: 9999;
+  bottom: 20px;
+  right: 20px;
+}
+
+sl-toast[variant="success"]::part(base) {
+  border-left: 4px solid var(--accent-green);
+}
+
+sl-toast[variant="warning"]::part(base) {
+  border-left: 4px solid var(--accent-yellow);
+}
+
+sl-toast[variant="danger"]::part(base) {
+  border-left: 4px solid var(--accent-red);
+}
+
+/* Confirmation dialog styling */
+sl-dialog::part(overlay) {
+  backdrop-filter: blur(8px);
+  background-color: rgba(15, 15, 26, 0.8);
+  z-index: 9998;
+}
+
+/* Apply fonts to Shoelace components */
+sl-button::part(base),
+sl-input::part(base),
+sl-input::part(input),
+sl-checkbox::part(base),
+sl-checkbox::part(label),
+sl-dialog::part(panel),
+sl-dialog::part(header),
+sl-dialog::part(body),
+sl-dialog::part(footer),
+sl-toast::part(base),
+sl-toast::part(message) {
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+}
+
+/* Make sure the buttons have proper font weight */
+sl-button::part(label) {
+  font-weight: 500;
+}
+
+/* Enhanced animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-5px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(5px);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Responsive */
+@media (max-width: 650px) {
+  body {
+    padding: 10px;
+    align-items: flex-start;
+  }
+
+  .container {
+    margin: 0;
+    border-radius: var(--border-radius-md);
+  }
+
+  .app-header {
+    padding: 20px 20px 15px;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  .todo-form {
+    padding: 20px 20px 15px;
+    flex-direction: column;
+  }
+
+  .todo-form sl-button::part(base) {
+    width: 100%;
+  }
+
+  .todo-list-container {
+    padding: 5px 20px 20px;
+  }
+}
+
+/* Fix padding for inputs */
+.todo-form sl-input::part(form-control-input) {
+  padding: 0 20px 0 50px !important;
+}
+
+.todo-form sl-icon[slot="prefix"] {
+  padding-left: 15px;
+}
+
+sl-dialog sl-input::part(form-control-input) {
+  padding: 0 20px 0 50px !important;
+}
+
+sl-dialog sl-icon[slot="prefix"] {
+  padding-left: 15px;
+}
+
+/* Fix error message positioning - make it appear within the card */
+sl-toast {
+  position: absolute !important;
+  right: 50% !important;
+  top: 20px !important;
+  transform: translateX(50%) !important;
+  z-index: 100000 !important;
+  margin: 0 auto !important;
+}
+
+/* Fix dialog appearing behind inputs issue */
+sl-dialog::part(overlay) {
+  z-index: 100000 !important;
+}
+
+sl-dialog::part(panel) {
+  z-index: 100001 !important;
+}
+
+/* Fix dialog positioning with higher z-index values */
+sl-dialog {
+  --z-index: 1000000 !important;
+}
+
+sl-dialog::part(overlay) {
+  z-index: 1000000 !important;
+}
+
+sl-dialog::part(panel) {
+  z-index: 1000001 !important;
+  position: fixed !important;
+}
+
+/* Center button text */
+sl-button::part(label) {
+  font-weight: 500;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+sl-dialog sl-button::part(base) {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }

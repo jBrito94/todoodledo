@@ -4,10 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Todo List App</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <!-- Shoelace UI Component Library -->
     <link
       rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.5.2/cdn/themes/light.css"
+      href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.5.2/cdn/themes/dark.css"
     />
     <script
       type="module"
@@ -16,30 +23,37 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div class="container">
-      <h1>Todoodledo</h1>
+    <div class="app-wrapper">
+      <div class="container">
+        <header class="app-header">
+          <h1>
+            <sl-icon name="check2-circle"></sl-icon>
+            Todoodledo
+          </h1>
+          <div id="clock" class="clock"></div>
+        </header>
 
-      <div id="clock" class="clock"></div>
+        <div class="todo-form">
+          <sl-input
+            id="todo-input"
+            placeholder="Add a new task"
+            size="medium"
+            clearable
+          >
+            <sl-icon name="list-task" slot="prefix"></sl-icon>
+          </sl-input>
+          <sl-button id="add-todo-btn" variant="primary">
+            <sl-icon name="plus-circle"></sl-icon>
+            Add Task
+          </sl-button>
+        </div>
 
-      <div class="todo-form">
-        <sl-input id="todo-input" placeholder="Add a new task"></sl-input>
-        <sl-button id="add-todo-btn" variant="primary">Add</sl-button>
+        <div class="todo-list-container">
+          <div class="todo-list" id="todo-list">
+            <!-- Todo items will be added here dynamically -->
+          </div>
+        </div>
       </div>
-
-      <div class="todo-list" id="todo-list">
-        <!-- Todo items will be added here dynamically -->
-      </div>
-
-      <!-- Edit Todo Dialog -->
-      <sl-dialog id="edit-dialog" label="Edit Todo">
-        <sl-input id="edit-todo-input"></sl-input>
-        <sl-button slot="footer" id="save-edit-btn" variant="primary"
-          >Save</sl-button
-        >
-        <sl-button slot="footer" id="cancel-edit-btn" variant="default"
-          >Cancel</sl-button
-        >
-      </sl-dialog>
     </div>
 
     <script src="app.js"></script>
