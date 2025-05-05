@@ -7,32 +7,54 @@
 }
 
 :root {
-  /* Updated color palette */
-  --primary-color: #8a63d2;
-  --primary-hover: #9c7be0;
-  --primary-active: #7356b8;
-  --secondary-color: #a88aea;
-  --text-color: #e6e8ff;
-  --text-secondary: rgba(230, 232, 255, 0.75);
-  --text-tertiary: rgba(230, 232, 255, 0.5);
-  --bg-dark: #0f0f1a;
-  --bg-surface: #1a1a2e;
-  --bg-component: #24243c;
-  --bg-hover: #2e2e4a;
-  --bg-active: #38386b;
+  /* Primary colors */
+  --primary-color: #7c4dff;
+  --primary-hover: #9370ff;
+  --primary-active: #5e35b1;
+  --secondary-color: #b388ff;
+
+  /* Text colors */
+  --text-color: #f8f9ff;
+  --text-secondary: rgba(248, 249, 255, 0.8);
+  --text-tertiary: rgba(248, 249, 255, 0.5);
+
+  /* Background colors */
+  --bg-dark: #151522;
+  --bg-surface: #1e1e32;
+  --bg-component: #282844;
+  --bg-hover: #30304c;
+  --bg-active: #3a3a5e;
+
+  /* Accent colors */
   --accent-green: #4ecca3;
-  --accent-red: #e94560;
+  --accent-green-soft: rgba(78, 204, 163, 0.2);
+  --accent-red: #ff5a5f;
+  --accent-red-soft: rgba(255, 90, 95, 0.2);
   --accent-yellow: #ffbd39;
+  --accent-yellow-soft: rgba(255, 189, 57, 0.2);
   --accent-blue: #3498db;
+  --accent-blue-soft: rgba(52, 152, 219, 0.2);
+
+  /* Shadows */
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.15);
   --shadow-md: 0 6px 24px rgba(0, 0, 0, 0.2);
   --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.3);
-  --shadow-glow: 0 0 15px rgba(138, 99, 210, 0.4);
-  --gradient-primary: linear-gradient(135deg, #8a63d2, #a88aea);
+  --shadow-glow: 0 0 15px rgba(124, 77, 255, 0.4);
+
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #7c4dff, #b388ff);
   --gradient-accent: linear-gradient(135deg, #4ecca3, #3db9d5);
-  --border-radius-sm: 6px;
+  --gradient-danger: linear-gradient(135deg, #ff5a5f, #ff8087);
+  --gradient-success: linear-gradient(135deg, #4ecca3, #2eaf79);
+  --gradient-warning: linear-gradient(135deg, #ffbd39, #ffda85);
+
+  /* Border radius */
+  --border-radius-sm: 8px;
   --border-radius-md: 12px;
   --border-radius-lg: 16px;
+  --border-radius-full: 999px;
+
+  /* Other */
   --border-light: 1px solid rgba(255, 255, 255, 0.05);
   --transition-fast: 0.2s ease;
   --transition-normal: 0.3s ease;
@@ -55,6 +77,7 @@ body {
   justify-content: center;
   transition: background-color 0.3s, color 0.3s;
   padding: 20px 10px;
+  overflow-x: hidden;
 }
 
 .app-wrapper {
@@ -64,6 +87,8 @@ body {
   flex-direction: column;
   justify-content: center;
   position: relative;
+  transform: translateZ(0);
+  animation: fadeInUp 0.6s ease-out;
 }
 
 .container {
@@ -76,9 +101,10 @@ body {
   position: relative;
   display: flex;
   flex-direction: column;
+  backdrop-filter: blur(10px);
 }
 
-/* Apply a subtle gradient border effect */
+/* Glow effect on container */
 .container::before {
   content: "";
   position: absolute;
@@ -87,7 +113,7 @@ body {
   padding: 1px;
   background: linear-gradient(
     to bottom right,
-    rgba(138, 99, 210, 0.3),
+    rgba(124, 77, 255, 0.3),
     transparent
   );
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -96,14 +122,22 @@ body {
   pointer-events: none;
 }
 
-/* App Header */
+/* Enhanced app header */
 .app-header {
   padding: 25px 30px 20px;
   position: relative;
-  background-color: rgba(20, 20, 35, 0.6);
+  background: linear-gradient(
+    to bottom,
+    rgba(30, 30, 60, 0.8),
+    rgba(20, 20, 45, 0.6)
+  );
   border-bottom: var(--border-light);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
+/* Improved title with icon */
 h1 {
   text-align: center;
   font-weight: 700;
@@ -117,18 +151,32 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 12px;
+  position: relative;
+}
+
+h1::after {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 3px;
+  background: var(--gradient-primary);
+  border-radius: 3px;
 }
 
 h1 sl-icon {
-  font-size: 2rem;
+  font-size: 2.2rem;
   color: var(--primary-color);
+  filter: drop-shadow(0 0 10px rgba(124, 77, 255, 0.5));
 }
 
-/* Clock */
+/* Enhanced clock display */
 .clock {
   text-align: center;
-  padding: 12px;
+  padding: 12px 16px;
   font-size: 1rem;
   font-weight: 500;
   background-color: var(--bg-component);
@@ -139,6 +187,25 @@ h1 sl-icon {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  width: fit-content;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+}
+
+.clock::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(179, 136, 255, 0.5),
+    transparent
+  );
 }
 
 .clock .date {
@@ -152,79 +219,105 @@ h1 sl-icon {
   letter-spacing: 1px;
 }
 
-/* Todo Form */
-.todo-form {
+/* Todo input container - completely redesigned */
+.todo-input-container {
   display: flex;
-  padding: 30px 30px 20px;
+  padding: 30px;
   gap: 15px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Custom input wrapper */
+.todo-input-wrapper {
   position: relative;
-  z-index: 5;
-}
-
-.todo-form sl-input {
-  flex-grow: 1;
-  --sl-input-border-radius: var(--border-radius-md);
-  --sl-input-height-medium: 50px;
-  --sl-input-font-size-medium: 1rem;
-}
-
-.todo-form sl-input::part(base) {
+  flex: 1;
+  display: flex;
+  align-items: center;
   background-color: var(--bg-component);
-  border-color: rgba(255, 255, 255, 0.08);
-  transition: all var(--transition-fast);
+  border-radius: var(--border-radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  transition: all 0.2s ease;
 }
 
-.todo-form sl-input::part(input) {
-  padding-left: 16px;
-  color: var(--text-color);
-  font-weight: 500;
+.todo-input-wrapper:focus-within {
+  box-shadow: 0 0 0 3px rgba(124, 77, 255, 0.25);
+  border-color: var(--primary-color);
 }
 
-.todo-form sl-input::part(base):hover {
+.todo-input-wrapper:hover:not(:focus-within) {
   border-color: rgba(255, 255, 255, 0.15);
   box-shadow: var(--shadow-sm);
 }
 
-.todo-form sl-input::part(base):focus-within {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(138, 99, 210, 0.25);
-}
-
-/* Button styles */
-sl-button::part(base) {
-  border-radius: var(--border-radius-md);
-  transition: all var(--transition-fast);
-  font-weight: 600;
-}
-
-.todo-form sl-button::part(base) {
-  height: 50px;
-  padding: 0 20px;
-  font-size: 1rem;
-  background: var(--gradient-primary);
-  border: none;
-  box-shadow: var(--shadow-sm);
+/* Icon styling */
+.input-icon {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  padding: 0 8px 0 20px;
+  color: var(--primary-color);
+  font-size: 1.2rem;
 }
 
-.todo-form sl-button::part(base):hover {
+/* Custom input field */
+.todo-input {
+  flex: 1;
+  height: 50px;
+  background: transparent;
+  border: none;
+  color: var(--text-color);
+  font-size: 1rem;
+  font-weight: 500;
+  font-family: "Inter", sans-serif;
+  padding: 0 20px 0 10px;
+  outline: none;
+  width: 100%;
+}
+
+.todo-input::placeholder {
+  color: var(--text-tertiary);
+  opacity: 0.7;
+}
+
+/* Add Task button */
+.add-todo-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 50px;
+  padding: 0 22px;
+  background: var(--gradient-primary);
+  border: none;
+  border-radius: var(--border-radius-md);
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  font-family: "Inter", sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+  white-space: nowrap;
+}
+
+.add-todo-btn:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-md), var(--shadow-glow);
 }
 
-.todo-form sl-button::part(base):active {
+.add-todo-btn:active {
   transform: translateY(0);
   background: var(--primary-active);
   box-shadow: var(--shadow-sm);
 }
 
-.todo-form sl-button sl-icon {
+.add-todo-btn sl-icon {
   font-size: 1.2rem;
 }
 
-/* Todo List Container */
+/* Enhanced scroll experience */
 .todo-list-container {
   padding: 10px 30px 30px;
   flex-grow: 1;
@@ -235,7 +328,7 @@ sl-button::part(base) {
 }
 
 .todo-list-container::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 .todo-list-container::-webkit-scrollbar-track {
@@ -254,7 +347,7 @@ sl-button::part(base) {
   gap: 15px;
 }
 
-/* Todo Items */
+/* Enhanced todo items with better animations */
 .todo-item {
   display: flex;
   align-items: center;
@@ -270,6 +363,7 @@ sl-button::part(base) {
   font-weight: 500;
 }
 
+/* Glass morphism effect */
 .todo-item::before {
   content: "";
   position: absolute;
@@ -318,20 +412,51 @@ sl-button::part(base) {
   flex-grow: 1;
 }
 
-.todo-content sl-checkbox {
-  --sl-input-border-color: rgba(255, 255, 255, 0.2);
+/* Custom checkbox implementation */
+.custom-checkbox {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--border-radius-sm);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.05);
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.todo-content sl-checkbox::part(base) {
-  --sl-color-primary-600: var(--primary-color);
+.custom-checkbox:hover {
+  border-color: var(--primary-color);
+  transform: scale(1.05);
 }
 
-.todo-content sl-checkbox::part(control) {
-  border-radius: 4px;
+.custom-checkbox.checked {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
 }
 
-.todo-content sl-checkbox::part(checked-icon) {
+.checkbox-inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.check-icon {
   color: white;
+  font-size: 1rem;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.2s ease;
+}
+
+.custom-checkbox.checked .check-icon {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .todo-text-container {
@@ -359,52 +484,119 @@ sl-button::part(base) {
   font-size: 0.9rem;
 }
 
+/* Custom action buttons */
 .todo-actions {
   display: flex;
   gap: 10px;
 }
 
 .todo-actions sl-button::part(base) {
+  width: 36px;
+  height: 36px;
   border-radius: var(--border-radius-sm);
-  box-shadow: none;
-  transition: all var(--transition-fast);
-  padding: 0.5rem;
-  font-size: 0.875rem;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  background: transparent;
+  transition: all 0.2s ease;
 }
 
-.todo-actions sl-button::part(base):hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
-}
-
-.todo-actions sl-button[variant="danger"]::part(base) {
-  background-color: transparent;
-  border: 1px solid var(--accent-red);
-  color: var(--accent-red);
-}
-
-.todo-actions sl-button[variant="danger"]::part(base):hover {
-  background-color: var(--accent-red);
-  color: white;
+.todo-actions sl-button::part(label) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
 }
 
 .todo-actions sl-button[variant="default"]::part(base) {
-  background-color: transparent;
-  border: 1px solid var(--text-tertiary);
-  color: var(--text-color);
+  color: var(--accent-blue);
+  border: 1px solid rgba(52, 152, 219, 0.3);
 }
 
 .todo-actions sl-button[variant="default"]::part(base):hover {
+  background-color: var(--accent-blue-soft);
+  transform: translateY(-2px);
+  box-shadow: 0 3px 10px rgba(52, 152, 219, 0.2);
+}
+
+.todo-actions sl-button[variant="danger"]::part(base) {
+  color: var(--accent-red);
+  border: 1px solid rgba(255, 90, 95, 0.3);
+}
+
+.todo-actions sl-button[variant="danger"]::part(base):hover {
+  background-color: var(--accent-red-soft);
+  transform: translateY(-2px);
+  box-shadow: 0 3px 10px rgba(255, 90, 95, 0.2);
+}
+
+/* Custom checkbox for task completion */
+.todo-checkbox {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--border-radius-sm);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.05);
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.todo-checkbox:hover {
+  border-color: var(--primary-color);
+  transform: scale(1.05);
+}
+
+.todo-checkbox.checked {
   background-color: var(--primary-color);
   border-color: var(--primary-color);
+}
+
+.todo-checkbox sl-icon {
   color: white;
-}
-
-.todo-actions sl-button sl-icon {
   font-size: 1rem;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.2s ease;
 }
 
-/* Empty State */
+.todo-checkbox.checked sl-icon {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Completed task styling */
+.todo-item.completed {
+  opacity: 0.85;
+  border-left-color: var(--accent-green);
+  background-color: rgba(40, 40, 68, 0.5);
+}
+
+.todo-item.completed::before {
+  background: linear-gradient(
+    90deg,
+    var(--accent-green) -100%,
+    transparent 10%
+  );
+  opacity: 0.15;
+}
+
+.todo-item.completed .todo-text {
+  text-decoration: line-through;
+  color: var(--text-tertiary);
+}
+
+.todo-item.completed .todo-time {
+  opacity: 0.6;
+}
+
+/* Empty state styling */
 .empty-message {
   display: flex;
   flex-direction: column;
@@ -413,10 +605,28 @@ sl-button::part(base) {
   padding: 50px 0;
   text-align: center;
   color: var(--text-secondary);
-  background-color: rgba(36, 36, 60, 0.5);
+  background-color: rgba(40, 40, 68, 0.4);
   border-radius: var(--border-radius-md);
   border: 1px dashed rgba(255, 255, 255, 0.1);
   transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.empty-message::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    circle at center,
+    rgba(124, 77, 255, 0.1) 0%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.5s ease;
 }
 
 .empty-message:hover {
@@ -426,11 +636,16 @@ sl-button::part(base) {
   transform: scale(1.01);
 }
 
+.empty-message:hover::after {
+  opacity: 1;
+}
+
 .empty-message sl-icon {
   color: var(--primary-color);
   margin-bottom: 15px;
   font-size: 3rem;
   animation: pulse 2s infinite;
+  filter: drop-shadow(0 0 8px rgba(124, 77, 255, 0.4));
 }
 
 .empty-message p:first-of-type {
@@ -440,7 +655,19 @@ sl-button::part(base) {
 }
 
 /* Dialog styling */
+sl-dialog {
+  --z-index: 1000000 !important;
+}
+
+sl-dialog::part(overlay) {
+  z-index: 1000000 !important;
+  backdrop-filter: blur(8px);
+  background-color: rgba(15, 15, 26, 0.8);
+}
+
 sl-dialog::part(panel) {
+  z-index: 1000001 !important;
+  position: fixed !important;
   background-color: var(--bg-surface);
   color: var(--text-color);
   border-radius: var(--border-radius-lg);
@@ -448,8 +675,6 @@ sl-dialog::part(panel) {
   box-shadow: var(--shadow-lg);
   max-width: 450px;
   width: 90%;
-  z-index: 9999;
-  position: relative;
 }
 
 sl-dialog::part(header) {
@@ -474,85 +699,34 @@ sl-dialog sl-input::part(base) {
   --sl-input-height-medium: 48px;
 }
 
+sl-dialog sl-input::part(form-control-input) {
+  padding: 0 20px 0 50px !important;
+}
+
+sl-dialog sl-icon[slot="prefix"] {
+  padding-left: 15px;
+  color: var(--primary-color);
+}
+
 sl-dialog sl-input::part(input) {
   color: var(--text-color);
   font-weight: 500;
-  padding-left: 16px;
 }
 
-/* Dialog buttons */
-sl-dialog sl-button[variant="primary"]::part(base) {
-  background: var(--gradient-primary);
-  border: none;
-  font-weight: 600;
-  padding: 0 20px;
-  height: 44px;
-}
-
-sl-dialog sl-button[variant="default"]::part(base) {
-  background-color: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: var(--text-color);
-  padding: 0 20px;
-  height: 44px;
-}
-
-sl-dialog sl-button::part(base):hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
-}
-
-/* Toast styling */
-sl-toast::part(base) {
-  background-color: var(--bg-surface);
-  border: var(--border-light);
-  color: var(--text-color);
-  border-radius: var(--border-radius-md);
-  box-shadow: var(--shadow-lg);
-  position: fixed;
-  z-index: 9999;
-  bottom: 20px;
-  right: 20px;
-}
-
-sl-toast[variant="success"]::part(base) {
-  border-left: 4px solid var(--accent-green);
-}
-
-sl-toast[variant="warning"]::part(base) {
-  border-left: 4px solid var(--accent-yellow);
-}
-
-sl-toast[variant="danger"]::part(base) {
-  border-left: 4px solid var(--accent-red);
-}
-
-/* Confirmation dialog styling */
-sl-dialog::part(overlay) {
-  backdrop-filter: blur(8px);
-  background-color: rgba(15, 15, 26, 0.8);
-  z-index: 9998;
-}
-
-/* Apply fonts to Shoelace components */
-sl-button::part(base),
-sl-input::part(base),
-sl-input::part(input),
-sl-checkbox::part(base),
-sl-checkbox::part(label),
-sl-dialog::part(panel),
-sl-dialog::part(header),
-sl-dialog::part(body),
-sl-dialog::part(footer),
-sl-toast::part(base),
-sl-toast::part(message) {
-  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-}
-
-/* Make sure the buttons have proper font weight */
+/* Button centering fix */
 sl-button::part(label) {
   font-weight: 500;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+sl-dialog sl-button::part(base) {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 
 /* Enhanced animations */
@@ -575,6 +749,17 @@ sl-button::part(label) {
   to {
     opacity: 0;
     transform: translateY(-20px);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -624,7 +809,7 @@ sl-button::part(label) {
   }
 }
 
-/* Responsive */
+/* Responsive adjustments */
 @media (max-width: 650px) {
   body {
     padding: 10px;
@@ -644,12 +829,16 @@ sl-button::part(label) {
     font-size: 2rem;
   }
 
-  .todo-form {
-    padding: 20px 20px 15px;
+  .todo-input-container {
     flex-direction: column;
+    padding: 20px;
   }
 
-  .todo-form sl-button::part(base) {
+  .todo-input-wrapper {
+    width: 100%;
+  }
+
+  .add-todo-btn {
     width: 100%;
   }
 
@@ -658,68 +847,14 @@ sl-button::part(label) {
   }
 }
 
-/* Fix padding for inputs */
-.todo-form sl-input::part(form-control-input) {
-  padding: 0 20px 0 50px !important;
-}
+/* Responsive adjustments for the form */
+@media (min-width: 650px) {
+  .todo-input-container {
+    flex-direction: row;
+  }
 
-.todo-form sl-icon[slot="prefix"] {
-  padding-left: 15px;
-}
-
-sl-dialog sl-input::part(form-control-input) {
-  padding: 0 20px 0 50px !important;
-}
-
-sl-dialog sl-icon[slot="prefix"] {
-  padding-left: 15px;
-}
-
-/* Fix error message positioning - make it appear within the card */
-sl-toast {
-  position: absolute !important;
-  right: 50% !important;
-  top: 20px !important;
-  transform: translateX(50%) !important;
-  z-index: 100000 !important;
-  margin: 0 auto !important;
-}
-
-/* Fix dialog appearing behind inputs issue */
-sl-dialog::part(overlay) {
-  z-index: 100000 !important;
-}
-
-sl-dialog::part(panel) {
-  z-index: 100001 !important;
-}
-
-/* Fix dialog positioning with higher z-index values */
-sl-dialog {
-  --z-index: 1000000 !important;
-}
-
-sl-dialog::part(overlay) {
-  z-index: 1000000 !important;
-}
-
-sl-dialog::part(panel) {
-  z-index: 1000001 !important;
-  position: fixed !important;
-}
-
-/* Center button text */
-sl-button::part(label) {
-  font-weight: 500;
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-sl-dialog sl-button::part(base) {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
+  .todo-input-wrapper {
+    width: auto;
+    min-width: 160px;
+  }
 }

@@ -33,19 +33,23 @@
           <div id="clock" class="clock"></div>
         </header>
 
-        <div class="todo-form">
-          <sl-input
-            id="todo-input"
-            placeholder="Add a new task"
-            size="medium"
-            clearable
-          >
-            <sl-icon name="list-task" slot="prefix"></sl-icon>
-          </sl-input>
-          <sl-button id="add-todo-btn" variant="primary">
+        <!-- Todo form -->
+        <div class="todo-input-container">
+          <div class="todo-input-wrapper">
+            <div class="input-icon">
+              <sl-icon name="list-task"></sl-icon>
+            </div>
+            <input
+              type="text"
+              id="todo-input"
+              class="todo-input"
+              placeholder="Add a new task"
+            />
+          </div>
+          <button id="add-todo-btn" class="add-todo-btn">
             <sl-icon name="plus-circle"></sl-icon>
-            Add Task
-          </sl-button>
+            <span>Add Task</span>
+          </button>
         </div>
 
         <div class="todo-list-container">

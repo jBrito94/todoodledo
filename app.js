@@ -77,45 +77,185 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Create toast message helper function
-  const showToast = (variant, message, icon, duration = 3000) => {
-    // Remove any existing toasts to prevent stacking
-    document.querySelectorAll("sl-toast").forEach((toast) => {
-      toast.hide();
+  // Create notification dialog instead of toast
+  const showNotification = (variant, message, icon, duration = 3000) => {
+    // Remove any existing notifications
+    document.querySelectorAll(".notification-dialog").forEach((dialog) => {
+      dialog.style.opacity = "0";
       setTimeout(() => {
-        toast.remove();
+        if (dialog.parentNode) {
+          dialog.parentNode.removeChild(dialog);
+        }
       }, 300);
     });
 
-    const toast = Object.assign(document.createElement("sl-toast"), {
-      variant: variant,
-      duration: duration,
-      innerHTML: `
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <sl-icon name="${icon}"></sl-icon>
-          <span>${message}</span>
-        </div>
-      `,
+    // Create notification dialog
+    const dialog = document.createElement("div");
+    dialog.className = "notification-dialog";
+    dialog.style.cssText = `
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: var(--bg-surface);
+      border-radius: 12px;
+      padding: 16px 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 10000000;
+      min-width: 300px;
+      max-width: 90%;
+      border-left: 4px solid ${
+        variant === "success"
+          ? "var(--accent-green)"
+          : variant === "warning"
+          ? "var(--accent-yellow)"
+          : variant === "danger"
+          ? "var(--accent-red)"
+          : "var(--primary-color)"
+      };
+      opacity: 0;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    `;
+
+    const contentWrapper = document.createElement("div");
+    contentWrapper.style.cssText = `
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    `;
+
+    const iconEl = document.createElement("div");
+    iconEl.style.cssText = `
+      font-size: 1.5rem;
+      color: ${
+        variant === "success"
+          ? "var(--accent-green)"
+          : variant === "warning"
+          ? "var(--accent-yellow)"
+          : variant === "danger"
+          ? "var(--accent-red)"
+          : "var(--primary-color)"
+      };
+    `;
+    iconEl.innerHTML = `<sl-icon name="${icon}"></sl-icon>`;
+
+    const messageEl = document.createElement("div");
+    messageEl.style.cssText = `
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--text-color);
+    `;
+    messageEl.textContent = message;
+
+    const closeBtn = document.createElement("button");
+    closeBtn.style.cssText = `
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      margin-left: 16px;
+      padding: 4px;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s ease;
+    `;
+    closeBtn.innerHTML = '<sl-icon name="x"></sl-icon>';
+    closeBtn.addEventListener("click", () => {
+      dialog.style.opacity = "0";
+      dialog.style.transform = "translateX(-50%) translateY(-20px)";
+      setTimeout(() => {
+        if (dialog.parentNode) {
+          dialog.parentNode.removeChild(dialog);
+        }
+      }, 300);
     });
 
-    // Add to app-wrapper instead of body to keep it within the card
-    const appWrapper = document.querySelector(".app-wrapper");
-    appWrapper.appendChild(toast);
-    toast.toast();
+    closeBtn.onmouseover = () => {
+      closeBtn.style.color = "var(--text-color)";
+    };
+    closeBtn.onmouseout = () => {
+      closeBtn.style.color = "var(--text-tertiary)";
+    };
+
+    contentWrapper.appendChild(iconEl);
+    contentWrapper.appendChild(messageEl);
+
+    dialog.appendChild(contentWrapper);
+    dialog.appendChild(closeBtn);
+
+    document.body.appendChild(dialog);
+
+    // Animate in
+    setTimeout(() => {
+      dialog.style.opacity = "1";
+      dialog.style.transform = "translateX(-50%) translateY(0)";
+    }, 10);
+
+    // Auto dismiss
+    if (duration) {
+      setTimeout(() => {
+        dialog.style.opacity = "0";
+        dialog.style.transform = "translateX(-50%) translateY(-20px)";
+        setTimeout(() => {
+          if (dialog.parentNode) {
+            dialog.parentNode.removeChild(dialog);
+          }
+        }, 300);
+      }, duration);
+    }
+  };
+
+  // Toggle todo completion with animation
+  const toggleTodoComplete = (id) => {
+    let isComplete = false;
+    todos = todos.map((todo) => {
+      if (todo.id === id) {
+        isComplete = !todo.completed;
+        return { ...todo, completed: isComplete };
+      }
+      return todo;
+    });
+    saveTodos();
+
+    // Apply animation before re-rendering
+    const todoEl = document.querySelector(`.todo-item[data-id="${id}"]`);
+    todoEl.style.animation = "pulse 0.4s";
+
+    // Instead of re-rendering the entire list, update just this item
+    todoEl.className = `todo-item ${isComplete ? "completed" : ""}`;
+
+    // Update the checkbox directly
+    const checkbox = todoEl.querySelector(".todo-checkbox");
+    if (checkbox) {
+      checkbox.className = `todo-checkbox ${isComplete ? "checked" : ""}`;
+    }
+
+    // Show status change notification
+    showNotification(
+      isComplete ? "success" : "primary",
+      `Task marked as ${isComplete ? "complete" : "incomplete"}`,
+      isComplete ? "check-circle" : "arrow-counterclockwise",
+      2000
+    );
   };
 
   // Add new todo with animation
   const addTodo = () => {
     const text = todoInput.value.trim();
     if (text === "") {
-      // Show validation feedback with Shoelace toast and shake animation
+      // Show validation feedback with shake animation
       todoInput.focus();
       todoInput.style.animation = "shake 0.5s";
       setTimeout(() => {
         todoInput.style.animation = "";
       }, 500);
 
-      showToast(
+      showNotification(
         "warning",
         "Please enter a task before adding",
         "exclamation-triangle"
@@ -136,7 +276,12 @@ document.addEventListener("DOMContentLoaded", () => {
     renderTodos();
 
     // Success feedback
-    showToast("success", "Task added successfully!", "check-circle", 2000);
+    showNotification(
+      "success",
+      "Task added successfully!",
+      "check-circle",
+      2000
+    );
 
     todoInput.value = "";
     todoInput.focus();
@@ -145,39 +290,138 @@ document.addEventListener("DOMContentLoaded", () => {
   // Delete todo with confirmation
   const deleteTodo = (id) => {
     // Create and show confirmation dialog
-    const confirmDialog = Object.assign(document.createElement("sl-dialog"), {
-      label: "Confirm Deletion",
-      innerHTML: `
-        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
-          <sl-icon name="trash" style="font-size: 2rem; color: var(--accent-red);"></sl-icon>
-          <div>
-            <p>Are you sure you want to delete this task?</p>
-            <p style="opacity: 0.7; font-size: 0.9rem; margin-top: 5px;">This action cannot be undone.</p>
-          </div>
-        </div>
-        <div slot="footer" style="display: flex; gap: 10px; justify-content: flex-end; width: 100%;">
-          <sl-button variant="default">Cancel</sl-button>
-          <sl-button variant="danger">
-            <sl-icon name="trash"></sl-icon> Delete
-          </sl-button>
-        </div>
+    const confirmDialog = Object.assign(document.createElement("div"), {
+      className: "modal-overlay",
+      style: `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999999;
+        backdrop-filter: blur(8px);
       `,
     });
 
+    const confirmContent = document.createElement("div");
+    confirmContent.className = "modal-content";
+    confirmContent.style = `
+      background-color: var(--bg-surface);
+      padding: 24px;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 450px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      position: relative;
+      z-index: 10000000;
+    `;
+
+    confirmContent.innerHTML = `
+      <div style="display: flex; align-items: flex-start; gap: 15px; margin-bottom: 20px;">
+        <div style="color: var(--accent-red); font-size: 2rem; margin-top: 3px;">
+          <sl-icon name="trash"></sl-icon>
+        </div>
+        <div>
+          <div style="font-size: 1.2rem; font-weight: 600; margin-bottom: 8px; color: var(--text-color);">
+            Delete Task
+          </div>
+          <p style="margin: 0; color: var(--text-secondary);">Are you sure you want to delete this task?</p>
+          <p style="margin-top: 8px; color: var(--text-tertiary); font-size: 0.9rem;">This action cannot be undone.</p>
+        </div>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 12px;">
+        <button id="cancel-delete" style="
+          padding: 10px 20px;
+          border-radius: 8px;
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          background-color: transparent;
+          color: var(--text-color);
+          font-family: 'Inter', sans-serif;
+          font-weight: 500;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          min-width: 100px;
+          transition: all 0.2s ease;
+        ">
+          <sl-icon name="x"></sl-icon> Cancel
+        </button>
+        <button id="confirm-delete" style="
+          padding: 10px 20px;
+          border-radius: 8px;
+          border: none;
+          background: linear-gradient(135deg, #e94560, #c33149);
+          color: white;
+          font-family: 'Inter', sans-serif;
+          font-weight: 600;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          min-width: 100px;
+          transition: all 0.2s ease;
+        ">
+          <sl-icon name="trash"></sl-icon> Delete
+        </button>
+      </div>
+    `;
+
+    confirmDialog.appendChild(confirmContent);
     document.body.appendChild(confirmDialog);
 
-    // Get dialog buttons
-    const cancelBtn = confirmDialog.querySelector(
-      'sl-button[variant="default"]'
-    );
-    const deleteBtn = confirmDialog.querySelector(
-      'sl-button[variant="danger"]'
-    );
+    // Add hover effects
+    const cancelBtn = document.getElementById("cancel-delete");
+    const confirmBtn = document.getElementById("confirm-delete");
 
-    // Add event listeners
-    cancelBtn.addEventListener("click", () => confirmDialog.hide());
-    deleteBtn.addEventListener("click", () => {
-      // Remove with animation before actually deleting
+    cancelBtn.onmouseover = () => {
+      cancelBtn.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+    };
+    cancelBtn.onmouseout = () => {
+      cancelBtn.style.backgroundColor = "transparent";
+    };
+
+    confirmBtn.onmouseover = () => {
+      confirmBtn.style.transform = "translateY(-2px)";
+      confirmBtn.style.boxShadow = "0 6px 16px rgba(233, 69, 96, 0.4)";
+    };
+    confirmBtn.onmouseout = () => {
+      confirmBtn.style.transform = "translateY(0)";
+      confirmBtn.style.boxShadow = "none";
+    };
+
+    // Fade in effect
+    confirmDialog.style.opacity = "0";
+    setTimeout(() => {
+      confirmDialog.style.opacity = "1";
+      confirmDialog.style.transition = "opacity 0.2s ease";
+    }, 10);
+
+    // Close function
+    const closeConfirm = () => {
+      confirmDialog.style.opacity = "0";
+      setTimeout(() => {
+        document.body.removeChild(confirmDialog);
+      }, 200);
+    };
+
+    // Event listeners
+    cancelBtn.addEventListener("click", closeConfirm);
+
+    confirmBtn.addEventListener("click", () => {
+      // Get the task text for better feedback
+      const taskText = todos.find((todo) => todo.id === id)?.text || "Task";
+      const shortText =
+        taskText.length > 30 ? taskText.substring(0, 30) + "..." : taskText;
+
+      // Remove with animation
       const todoEl = document.querySelector(`.todo-item[data-id="${id}"]`);
       todoEl.style.animation = "fadeOut 0.4s forwards";
 
@@ -185,43 +429,19 @@ document.addEventListener("DOMContentLoaded", () => {
         todos = todos.filter((todo) => todo.id !== id);
         saveTodos();
         renderTodos();
-        confirmDialog.hide();
+        closeConfirm();
 
         // Show delete success notification
-        showToast("danger", "Task deleted", "trash", 2000);
+        showNotification("danger", `"${shortText}" deleted`, "trash", 2000);
       }, 400);
     });
 
-    confirmDialog.show();
-  };
-
-  // Toggle todo completion with animation
-  const toggleTodoComplete = (id) => {
-    let isComplete = false;
-    todos = todos.map((todo) => {
-      if (todo.id === id) {
-        isComplete = !todo.completed;
-        return { ...todo, completed: isComplete };
+    // Close on backdrop click
+    confirmDialog.addEventListener("click", (e) => {
+      if (e.target === confirmDialog) {
+        closeConfirm();
       }
-      return todo;
     });
-    saveTodos();
-
-    // Apply animation before re-rendering
-    const todoEl = document.querySelector(`.todo-item[data-id="${id}"]`);
-    todoEl.style.animation = "pulse 0.4s";
-
-    setTimeout(() => {
-      renderTodos();
-
-      // Show status change notification
-      showToast(
-        isComplete ? "success" : "primary",
-        `Task marked as ${isComplete ? "complete" : "incomplete"}`,
-        isComplete ? "check-circle" : "arrow-counterclockwise",
-        2000
-      );
-    }, 400);
   };
 
   // Edit todo
@@ -403,7 +623,11 @@ document.addEventListener("DOMContentLoaded", () => {
           input.style.animation = "";
         }, 500);
 
-        showToast("warning", "Task cannot be empty", "exclamation-triangle");
+        showNotification(
+          "warning",
+          "Task cannot be empty",
+          "exclamation-triangle"
+        );
         return;
       }
 
@@ -418,7 +642,12 @@ document.addEventListener("DOMContentLoaded", () => {
       renderTodos();
       closeModal();
 
-      showToast("success", "Task updated successfully!", "pencil-square", 2000);
+      showNotification(
+        "success",
+        "Task updated successfully!",
+        "pencil-square",
+        2000
+      );
 
       // Highlight the edited item
       setTimeout(() => {
@@ -492,15 +721,19 @@ document.addEventListener("DOMContentLoaded", () => {
       const todoItem = document.createElement("div");
       todoItem.className = `todo-item ${todo.completed ? "completed" : ""}`;
       todoItem.dataset.id = todo.id;
+
       // Add staggered animation delay for smoother list appearance
       todoItem.style.animation = `fadeIn 0.4s ${index * 0.05}s backwards`;
 
+      // Main content - checkbox, text and time
       const todoContent = document.createElement("div");
       todoContent.className = "todo-content";
 
-      const checkbox = document.createElement("sl-checkbox");
-      checkbox.checked = todo.completed;
-      checkbox.addEventListener("sl-change", () => toggleTodoComplete(todo.id));
+      // Create checkbox for completion
+      const checkbox = document.createElement("div");
+      checkbox.className = `todo-checkbox ${todo.completed ? "checked" : ""}`;
+      checkbox.innerHTML = `<sl-icon name="check"></sl-icon>`;
+      checkbox.addEventListener("click", () => toggleTodoComplete(todo.id));
 
       const todoTextContainer = document.createElement("div");
       todoTextContainer.className = "todo-text-container";
@@ -509,11 +742,22 @@ document.addEventListener("DOMContentLoaded", () => {
       todoText.className = "todo-text";
       todoText.textContent = todo.text;
 
+      // Format the date
+      const created = new Date(todo.createdAt);
+      const relativeTime = formatRelativeTime(todo.createdAt);
+      const fullDate = created.toLocaleDateString("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
       const todoTime = document.createElement("div");
       todoTime.className = "todo-time";
       todoTime.innerHTML = `
         <sl-icon name="clock"></sl-icon>
-        ${formatRelativeTime(todo.createdAt)}
+        <span title="${fullDate}">${relativeTime}</span>
       `;
 
       todoTextContainer.appendChild(todoText);
@@ -522,19 +766,20 @@ document.addEventListener("DOMContentLoaded", () => {
       todoContent.appendChild(checkbox);
       todoContent.appendChild(todoTextContainer);
 
+      // Action buttons - revert to original style but improved
       const todoActions = document.createElement("div");
       todoActions.className = "todo-actions";
 
       const editButton = document.createElement("sl-button");
-      editButton.size = "small";
-      editButton.variant = "default";
+      editButton.setAttribute("size", "small");
+      editButton.setAttribute("variant", "default");
       editButton.innerHTML = '<sl-icon name="pencil"></sl-icon>';
       editButton.addEventListener("click", () => editTodo(todo.id));
       editButton.title = "Edit Task";
 
       const deleteButton = document.createElement("sl-button");
-      deleteButton.size = "small";
-      deleteButton.variant = "danger";
+      deleteButton.setAttribute("size", "small");
+      deleteButton.setAttribute("variant", "danger");
       deleteButton.innerHTML = '<sl-icon name="trash"></sl-icon>';
       deleteButton.addEventListener("click", () => deleteTodo(todo.id));
       deleteButton.title = "Delete Task";
