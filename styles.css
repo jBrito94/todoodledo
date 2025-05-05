@@ -1095,3 +1095,112 @@ h1 sl-icon {
     transform: translateY(-50%) translateX(3px);
   }
 }
+
+/* Completed tasks section */
+.completed-section {
+  margin-top: 25px;
+  border-radius: var(--border-radius-md);
+  background-color: rgba(37, 38, 68, 0.3);
+  overflow: hidden;
+  transition: all var(--transition-normal);
+  position: relative;
+}
+
+.completed-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  cursor: pointer;
+  background-color: rgba(37, 38, 68, 0.6);
+  border-left: 4px solid var(--accent-green);
+  transition: all var(--transition-fast);
+  position: relative;
+}
+
+.completed-header:hover {
+  background-color: rgba(46, 47, 86, 0.6);
+}
+
+.completed-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 245, 192, 0.3),
+    transparent
+  );
+  opacity: 0.7;
+}
+
+.completed-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-color);
+}
+
+.completed-title sl-icon {
+  color: var(--accent-green);
+  font-size: 1.2rem;
+}
+
+.completed-toggle {
+  color: var(--text-tertiary);
+  transition: transform var(--transition-fast);
+}
+
+.completed-section.collapsed .completed-toggle {
+  transform: rotate(180deg);
+}
+
+.completed-content {
+  max-height: 800px;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 15px;
+}
+
+.completed-section.collapsed .completed-content {
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* Add spacing between completed tasks */
+.completed-content .todo-item {
+  margin-top: 12px;
+  opacity: 0.8;
+}
+
+.completed-content .todo-item:first-child {
+  margin-top: 0;
+}
+
+/* Style for the completed task counter */
+.completed-title span {
+  position: relative;
+}
+
+.completed-title span::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--accent-green);
+  opacity: 0.4;
+  transition: opacity var(--transition-fast);
+}
+
+.completed-header:hover .completed-title span::after {
+  opacity: 0.7;
+}

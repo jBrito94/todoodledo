@@ -9,6 +9,9 @@ document.addEventListener("DOMContentLoaded", () => {
   let draggedItem = null;
   let draggedItemId = null;
 
+  // Track completed section collapse state
+  let isCompletedSectionCollapsed = true;
+
   // Clock functionality with improved formatting
   function updateClock() {
     const now = new Date();
@@ -745,147 +748,206 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Use the order directly from the todos array - don't sort by date
-    // We only need to separate completed and non-completed items
-    const sortedTodos = [...todos].sort((a, b) => {
-      if (a.completed !== b.completed) {
-        return a.completed ? 1 : -1; // Uncompleted first
-      }
-      // Maintain the existing order within each group (completed/incomplete)
-      return 0;
+    // Separate todos into incomplete and completed
+    const incompleteTodos = todos.filter((todo) => !todo.completed);
+    const completedTodos = todos.filter((todo) => todo.completed);
+
+    // Render incomplete todos first
+    incompleteTodos.forEach((todo, index) => {
+      renderTodoItem(todo, index);
     });
 
-    sortedTodos.forEach((todo, index) => {
-      const todoItem = document.createElement("div");
-      todoItem.className = `todo-item ${todo.completed ? "completed" : ""}`;
-      todoItem.dataset.id = todo.id;
-
-      // Add staggered animation delay for smoother list appearance
-      todoItem.style.animation = `fadeIn 0.4s ${index * 0.05}s backwards`;
-
-      // Make non-completed items draggable
-      if (!todo.completed) {
-        todoItem.draggable = true;
-        todoItem.classList.add("draggable");
-
-        // Add drag handle
-        const dragHandle = document.createElement("div");
-        dragHandle.className = "drag-handle";
-        dragHandle.innerHTML = `<sl-icon name="grip-vertical"></sl-icon>`;
-        todoItem.appendChild(dragHandle);
-
-        // Drag and drop event listeners
-        todoItem.addEventListener("dragstart", (e) => {
-          draggedItem = todoItem;
-          draggedItemId = todo.id;
-          setTimeout(() => {
-            todoItem.classList.add("dragging");
-          }, 0);
-        });
-
-        todoItem.addEventListener("dragend", () => {
-          todoItem.classList.remove("dragging");
-          draggedItem = null;
-          draggedItemId = null;
-          // Update the order in our data
-          updateTodoOrder();
-        });
+    // If there are completed todos, add a collapsible section
+    if (completedTodos.length > 0) {
+      // Create completed section header
+      const completedSection = document.createElement("div");
+      completedSection.className = "completed-section";
+      if (isCompletedSectionCollapsed) {
+        completedSection.classList.add("collapsed");
       }
 
-      // Main content - checkbox, text and time
-      const todoContent = document.createElement("div");
-      todoContent.className = "todo-content";
-
-      // Create checkbox for completion
-      const checkbox = document.createElement("div");
-      checkbox.className = `todo-checkbox ${todo.completed ? "checked" : ""}`;
-      checkbox.innerHTML = `<sl-icon name="check"></sl-icon>`;
-      checkbox.addEventListener("click", () => toggleTodoComplete(todo.id));
-
-      const todoTextContainer = document.createElement("div");
-      todoTextContainer.className = "todo-text-container";
-
-      const todoText = document.createElement("div");
-      todoText.className = "todo-text";
-      todoText.textContent = todo.text;
-
-      // Format the date
-      const created = new Date(todo.createdAt);
-      const relativeTime = formatRelativeTime(todo.createdAt);
-      const fullDate = created.toLocaleDateString("en-US", {
-        weekday: "short",
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-
-      const todoTime = document.createElement("div");
-      todoTime.className = "todo-time";
-      todoTime.innerHTML = `
-        <sl-icon name="clock"></sl-icon>
-        <span title="${fullDate}">${relativeTime}</span>
+      const completedHeader = document.createElement("div");
+      completedHeader.className = "completed-header";
+      completedHeader.innerHTML = `
+        <div class="completed-title">
+          <sl-icon name="check2-all"></sl-icon>
+          <span>Completed Tasks (${completedTodos.length})</span>
+        </div>
+        <div class="completed-toggle">
+          <sl-icon name="${
+            isCompletedSectionCollapsed ? "chevron-up" : "chevron-down"
+          }"></sl-icon>
+        </div>
       `;
 
-      todoTextContainer.appendChild(todoText);
-      todoTextContainer.appendChild(todoTime);
+      // Add click handler to toggle completed section
+      completedHeader.addEventListener("click", () => {
+        isCompletedSectionCollapsed = !isCompletedSectionCollapsed;
+        completedSection.classList.toggle("collapsed");
+        const chevron = completedHeader.querySelector(
+          ".completed-toggle sl-icon"
+        );
+        if (isCompletedSectionCollapsed) {
+          chevron.setAttribute("name", "chevron-up");
+        } else {
+          chevron.setAttribute("name", "chevron-down");
+        }
+      });
 
-      todoContent.appendChild(checkbox);
-      todoContent.appendChild(todoTextContainer);
+      // Create content container for completed todos
+      const completedContent = document.createElement("div");
+      completedContent.className = "completed-content";
 
-      // Action buttons - revert to original style but improved
-      const todoActions = document.createElement("div");
-      todoActions.className = "todo-actions";
+      // Add completed todos to the content container
+      // Always create DOM elements, even if the section is collapsed
+      completedTodos.forEach((todo, index) => {
+        const todoEl = createTodoElement(todo, incompleteTodos.length + index);
+        completedContent.appendChild(todoEl);
+      });
 
-      const editButton = document.createElement("sl-button");
-      editButton.setAttribute("size", "small");
-      editButton.setAttribute("variant", "default");
-      editButton.innerHTML = '<sl-icon name="pencil"></sl-icon>';
-      editButton.title = "Edit Task";
+      completedSection.appendChild(completedHeader);
+      completedSection.appendChild(completedContent);
+      todoList.appendChild(completedSection);
+    }
+  };
 
-      // Only add event listener if task is not completed
-      if (!todo.completed) {
-        editButton.addEventListener("click", () => editTodo(todo.id));
-        todoActions.appendChild(editButton);
-      } else {
-        editButton.setAttribute("disabled", "");
-        editButton.title = "Cannot edit completed task";
-        editButton.classList.add("disabled-button");
-        // Wrap in a div with cursor not-allowed
-        const editWrapper = document.createElement("div");
-        editWrapper.style.cursor = "not-allowed";
-        editWrapper.style.display = "inline-block";
-        editWrapper.appendChild(editButton);
-        todoActions.appendChild(editWrapper);
-      }
+  // Helper function to render a single todo item
+  const renderTodoItem = (todo, index) => {
+    const todoEl = createTodoElement(todo, index);
+    todoList.appendChild(todoEl);
+  };
 
-      const deleteButton = document.createElement("sl-button");
-      deleteButton.setAttribute("size", "small");
-      deleteButton.setAttribute("variant", "danger");
-      deleteButton.innerHTML = '<sl-icon name="trash"></sl-icon>';
-      deleteButton.title = "Delete Task";
+  // Create todo element - extracted from renderTodos for reusability
+  const createTodoElement = (todo, index) => {
+    const todoItem = document.createElement("div");
+    todoItem.className = `todo-item ${todo.completed ? "completed" : ""}`;
+    todoItem.dataset.id = todo.id;
 
-      // Only add event listener if task is not completed
-      if (!todo.completed) {
-        deleteButton.addEventListener("click", () => deleteTodo(todo.id));
-        todoActions.appendChild(deleteButton);
-      } else {
-        deleteButton.setAttribute("disabled", "");
-        deleteButton.title = "Cannot delete completed task";
-        deleteButton.classList.add("disabled-button");
-        // Wrap in a div with cursor not-allowed
-        const deleteWrapper = document.createElement("div");
-        deleteWrapper.style.cursor = "not-allowed";
-        deleteWrapper.style.display = "inline-block";
-        deleteWrapper.appendChild(deleteButton);
-        todoActions.appendChild(deleteWrapper);
-      }
+    // Add staggered animation delay for smoother list appearance
+    todoItem.style.animation = `fadeIn 0.4s ${index * 0.05}s backwards`;
 
-      todoItem.appendChild(todoContent);
-      todoItem.appendChild(todoActions);
+    // Make non-completed items draggable
+    if (!todo.completed) {
+      todoItem.draggable = true;
+      todoItem.classList.add("draggable");
 
-      todoList.appendChild(todoItem);
+      // Add drag handle
+      const dragHandle = document.createElement("div");
+      dragHandle.className = "drag-handle";
+      dragHandle.innerHTML = `<sl-icon name="grip-vertical"></sl-icon>`;
+      todoItem.appendChild(dragHandle);
+
+      // Drag and drop event listeners
+      todoItem.addEventListener("dragstart", (e) => {
+        draggedItem = todoItem;
+        draggedItemId = todo.id;
+        setTimeout(() => {
+          todoItem.classList.add("dragging");
+        }, 0);
+      });
+
+      todoItem.addEventListener("dragend", () => {
+        todoItem.classList.remove("dragging");
+        draggedItem = null;
+        draggedItemId = null;
+        // Update the order in our data
+        updateTodoOrder();
+      });
+    }
+
+    // Main content - checkbox, text and time
+    const todoContent = document.createElement("div");
+    todoContent.className = "todo-content";
+
+    // Create checkbox for completion
+    const checkbox = document.createElement("div");
+    checkbox.className = `todo-checkbox ${todo.completed ? "checked" : ""}`;
+    checkbox.innerHTML = `<sl-icon name="check"></sl-icon>`;
+    checkbox.addEventListener("click", () => toggleTodoComplete(todo.id));
+
+    const todoTextContainer = document.createElement("div");
+    todoTextContainer.className = "todo-text-container";
+
+    const todoText = document.createElement("div");
+    todoText.className = "todo-text";
+    todoText.textContent = todo.text;
+
+    // Format the date
+    const created = new Date(todo.createdAt);
+    const relativeTime = formatRelativeTime(todo.createdAt);
+    const fullDate = created.toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
+
+    const todoTime = document.createElement("div");
+    todoTime.className = "todo-time";
+    todoTime.innerHTML = `
+      <sl-icon name="clock"></sl-icon>
+      <span title="${fullDate}">${relativeTime}</span>
+    `;
+
+    todoTextContainer.appendChild(todoText);
+    todoTextContainer.appendChild(todoTime);
+
+    todoContent.appendChild(checkbox);
+    todoContent.appendChild(todoTextContainer);
+
+    // Action buttons - revert to original style but improved
+    const todoActions = document.createElement("div");
+    todoActions.className = "todo-actions";
+
+    const editButton = document.createElement("sl-button");
+    editButton.setAttribute("size", "small");
+    editButton.setAttribute("variant", "default");
+    editButton.innerHTML = '<sl-icon name="pencil"></sl-icon>';
+    editButton.title = "Edit Task";
+
+    // Only add event listener if task is not completed
+    if (!todo.completed) {
+      editButton.addEventListener("click", () => editTodo(todo.id));
+      todoActions.appendChild(editButton);
+    } else {
+      editButton.setAttribute("disabled", "");
+      editButton.title = "Cannot edit completed task";
+      editButton.classList.add("disabled-button");
+      // Wrap in a div with cursor not-allowed
+      const editWrapper = document.createElement("div");
+      editWrapper.style.cursor = "not-allowed";
+      editWrapper.style.display = "inline-block";
+      editWrapper.appendChild(editButton);
+      todoActions.appendChild(editWrapper);
+    }
+
+    const deleteButton = document.createElement("sl-button");
+    deleteButton.setAttribute("size", "small");
+    deleteButton.setAttribute("variant", "danger");
+    deleteButton.innerHTML = '<sl-icon name="trash"></sl-icon>';
+    deleteButton.title = "Delete Task";
+
+    // Only add event listener if task is not completed
+    if (!todo.completed) {
+      deleteButton.addEventListener("click", () => deleteTodo(todo.id));
+      todoActions.appendChild(deleteButton);
+    } else {
+      deleteButton.setAttribute("disabled", "");
+      deleteButton.title = "Cannot delete completed task";
+      deleteButton.classList.add("disabled-button");
+      // Wrap in a div with cursor not-allowed
+      const deleteWrapper = document.createElement("div");
+      deleteWrapper.style.cursor = "not-allowed";
+      deleteWrapper.style.display = "inline-block";
+      deleteWrapper.appendChild(deleteButton);
+      todoActions.appendChild(deleteWrapper);
+    }
+
+    todoItem.appendChild(todoContent);
+    todoItem.appendChild(todoActions);
+
+    return todoItem;
   };
 
   // Set up drag and drop event listeners once
