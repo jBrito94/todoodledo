@@ -111,6 +111,7 @@ document.addEventListener("DOMContentLoaded", () => {
       z-index: 10000000;
       min-width: 300px;
       max-width: 90%;
+      width: auto;
       border-left: 4px solid ${
         variant === "success"
           ? "var(--accent-green)"
@@ -129,6 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
       display: flex;
       align-items: center;
       gap: 12px;
+      width: 100%;
     `;
 
     const iconEl = document.createElement("div");
@@ -143,6 +145,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ? "var(--accent-red)"
           : "var(--primary-color)"
       };
+      flex-shrink: 0;
     `;
     iconEl.innerHTML = `<sl-icon name="${icon}"></sl-icon>`;
 
@@ -151,6 +154,7 @@ document.addEventListener("DOMContentLoaded", () => {
       font-size: 1rem;
       font-weight: 500;
       color: var(--text-color);
+      flex-grow: 1;
     `;
     messageEl.textContent = message;
 
@@ -167,6 +171,7 @@ document.addEventListener("DOMContentLoaded", () => {
       align-items: center;
       justify-content: center;
       transition: color 0.2s ease;
+      flex-shrink: 0;
     `;
     closeBtn.innerHTML = '<sl-icon name="x"></sl-icon>';
     closeBtn.addEventListener("click", () => {
