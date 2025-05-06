@@ -1717,19 +1717,10 @@ document.addEventListener("DOMContentLoaded", () => {
       color: "var(--text-tertiary)",
     };
 
-    // Add category indicator
-    const categoryIndicator = document.createElement("div");
-    categoryIndicator.className = "todo-category-indicator";
-    categoryIndicator.style.cssText = `
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      width: 4px;
-      background-color: ${todoCategory.color};
-      border-radius: 4px 0 0 4px;
-    `;
-    todoItem.appendChild(categoryIndicator);
+    // Set the border color directly on the todo item instead of adding a separate indicator
+    todoItem.style.borderLeftColor = todo.completed
+      ? "var(--accent-green)"
+      : todoCategory.color;
 
     // Make non-completed items draggable
     if (!todo.completed) {
@@ -1818,10 +1809,15 @@ document.addEventListener("DOMContentLoaded", () => {
       font-size: 0.75rem;
       color: ${todoCategory.color};
       margin-left: 5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 120px;
+      transition: all 0.2s ease;
     `;
     inlineCategoryBadge.innerHTML = `
-      <sl-icon name="${todoCategory.icon}" style="font-size: 0.9rem;"></sl-icon>
-      <span>${todoCategory.name}</span>
+      <sl-icon name="${todoCategory.icon}" style="font-size: 0.9rem; flex-shrink: 0;"></sl-icon>
+      <span style="overflow: hidden; text-overflow: ellipsis;">${todoCategory.name}</span>
     `;
 
     // Append elements to todoTime
@@ -1838,6 +1834,20 @@ document.addEventListener("DOMContentLoaded", () => {
     const todoActions = document.createElement("div");
     todoActions.className = "todo-actions";
 
+    // Create a mobile-specific category badge that will appear above buttons
+    const mobileCategoryBadge = document.createElement("div");
+    mobileCategoryBadge.className = "mobile-category-badge-wrapper";
+
+    // Clone the category badge for mobile
+    const mobileBadge = inlineCategoryBadge.cloneNode(true);
+    mobileBadge.style.marginLeft = "0";
+    mobileBadge.style.maxWidth = "none";
+    mobileCategoryBadge.appendChild(mobileBadge);
+
+    // Create a container for the buttons
+    const actionButtons = document.createElement("div");
+    actionButtons.className = "todo-actions-buttons";
+
     const editButton = document.createElement("sl-button");
     editButton.setAttribute("size", "small");
     editButton.setAttribute("variant", "default");
@@ -1847,7 +1857,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Only add event listener if task is not completed
     if (!todo.completed) {
       editButton.addEventListener("click", () => editTodo(todo.id));
-      todoActions.appendChild(editButton);
+      actionButtons.appendChild(editButton);
     } else {
       editButton.setAttribute("disabled", "");
       editButton.title = "Cannot edit completed task";
@@ -1857,7 +1867,7 @@ document.addEventListener("DOMContentLoaded", () => {
       editWrapper.style.cursor = "not-allowed";
       editWrapper.style.display = "inline-block";
       editWrapper.appendChild(editButton);
-      todoActions.appendChild(editWrapper);
+      actionButtons.appendChild(editWrapper);
     }
 
     const deleteButton = document.createElement("sl-button");
@@ -1869,7 +1879,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Only add event listener if task is not completed
     if (!todo.completed) {
       deleteButton.addEventListener("click", () => deleteTodo(todo.id));
-      todoActions.appendChild(deleteButton);
+      actionButtons.appendChild(deleteButton);
     } else {
       deleteButton.setAttribute("disabled", "");
       deleteButton.title = "Cannot delete completed task";
@@ -1879,8 +1889,12 @@ document.addEventListener("DOMContentLoaded", () => {
       deleteWrapper.style.cursor = "not-allowed";
       deleteWrapper.style.display = "inline-block";
       deleteWrapper.appendChild(deleteButton);
-      todoActions.appendChild(deleteWrapper);
+      actionButtons.appendChild(deleteWrapper);
     }
+
+    // Add the mobile category badge and action buttons to the actions container
+    todoActions.appendChild(mobileCategoryBadge);
+    todoActions.appendChild(actionButtons);
 
     todoItem.appendChild(todoContent);
     todoItem.appendChild(todoActions);
